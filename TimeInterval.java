@@ -1,6 +1,7 @@
 import java.util.ArrayList;
+import java.io.Serializable;
 
-public class TimeInterval {
+public class TimeInterval implements Serializable {
         
         private int from;
         private int to;

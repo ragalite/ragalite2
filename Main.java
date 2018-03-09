@@ -1,18 +1,25 @@
+import java.io.*;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
+
 /**
- * Upload activities and then categorizes them. 
+ * Upload activities and categorize them
  */
 public class Main {
 
 	private static final Scanner stdin = new Scanner(System.in);
 
-	private static final Map<ActivityType, List<Activity>> activities 
-		= new HashMap<>();
+	/*private static final Map<ActivityType, List<Activity>> activities 
+		= new HashMap<>();*/
 	
+	private static HashSet<Activity> activities;
+
 	private static final Map<String, Runnable> inputActions 
 		= new HashMap<>();
 	
@@ -20,9 +27,11 @@ public class Main {
 	static {
 		inputActions.put("add", () -> addActivity());
 		inputActions.put("print", () -> printActivities());
+		inputActions.put("filter", () -> filterByActivityType());
 	}
+
 	/* INTERACTIVE MESSAGES */
-	/* PMT = PROMPT, MSG = MESSAGE */
+	/* PMT = PROMPT, MSG = MESSAGE, CHC = CHOICE */
 	/* (AC)TIVITY */
 
 	/* LOGIN */
@@ -34,8 +43,8 @@ public class Main {
 		"Enter an activity name: ";
 	
 	/* mainLoop */
-	public static final String ACTION_PMT =
-		"Enter an action (%s): ";
+	public static final String ACTION_CHC = 
+		"an action";
 
 	/* printActivities */
 	public static final String AC_MSG =
@@ -52,6 +61,10 @@ public class Main {
 		"Enter the start time: ";
 	public static final String TIME_STOP_PMT = 
 		"Enter the stop time: ";
+	
+	/* Exiting */
+	public static final String GOODBYE_MSG =
+		"Goodbye!%n";
 
 	/**
 	 * Prompts the user for input.
@@ -65,6 +78,68 @@ public class Main {
 		System.out.printf(promptMsg, fmtParams);
 		return stdin.nextLine();
 	}
+
+	/**
+	 * Prompts the user to choose from a specified set of options.
+	 *
+	 * This function will attempt to match user input to an option. A *match*
+	 * occurs when
+	 *
+	 * 1. the input is the same as the option, or
+	 * 2. the option begins with the input (i.e., has it as one of its left 
+	 *    substrings), *and* the input is not an empty string.
+	 *
+	 * Matching is case-insensitive.
+	 *
+	 * If multiple options match with the given substring, then any one of them
+	 * may be returned.
+	 *
+	 * If no options match, then the user can be made to re-enter their choice
+	 * until one does, or a default value can be returned.
+	 *
+	 * The user can always terminate this function by inputting the empty string.
+	 * This again will result in the default value being returned.
+	 *
+	 * Since the empty string is treated as a unique choice, it is
+	 * discouraged for the provided options to actually contain the empty
+	 * string. An empty string option will be ignored and the behavior will still
+	 * execute.
+	 *
+	 * @param promptSuffix specifies what to choose. The prefix is "Choose "
+	 *                     (including the space).
+	 * @param options      the set of options to display to the user
+	 * @param reenterUntilSuccess forces the user to re-enter a choice until
+	 *                            it matches an option (or the choice is an
+	 *                            empty string)
+	 * @param defaultChoice what to return if the user refuses to provide
+	 *                      an appropriate choice
+	 *
+	 * @return the user's choice
+	 * 
+         */
+	public static String promptOption(String promptSuffix,
+	                                  Set<String> options,
+					  boolean reenterUntilSuccess,
+					  String defaultChoice) {
+		String choice;
+		do {	
+			System.out.printf("Choose %s (%s): ", promptSuffix, 
+                                                              options);
+			choice = stdin.nextLine().toLowerCase();
+			if (choice.isEmpty()) { // all strings start with the
+			                        // empty string so it's best
+						// to just disallow it.
+				break;
+			}
+			for (String option : options) {
+				if (option.toLowerCase().startsWith(choice)) {
+					return option;
+				}
+			}
+		} while (reenterUntilSuccess);
+
+		return defaultChoice;
+	}  
 
 	/**
 	 * Displays a message to the user.
@@ -86,7 +161,21 @@ public class Main {
 		String username = prompt(LOGIN_PMT); 
 		return username;
 	}
-
+	
+	/**
+	 * Looks up a member of an enum by its string representation.
+	 *
+	 * If the string does not correspond to a member of the given
+	 * enum, null is returned isntead.
+	 *
+	 * @param enumType specifies the type of the members to search through
+	 * @param toLookup the string representation of the desired enum
+	 *                 member
+	 *
+	 * @return the enum member of enumType with string representation
+	 *         toLookup, or null if such a member is nonexistent
+	 *
+	 */
 	public static <E extends Enum<E>> E enumLookup(Class<E> enumType,
 	                                               String toLookup) {
 		try {
@@ -98,51 +187,118 @@ public class Main {
 		}
 	}
 
+	/**
+	 * Serializes an object. 
+	 *
+	 */
+	public static void serialize(Serializable toSerialize, String toFileDir) {
+		// make sure the path to file exists!
+		// we do getParentFile because we don't want to make the file
+		// itself a directory.
+		new File(toFileDir).getParentFile().mkdirs();
+
+		try (FileOutputStream   fos = new FileOutputStream  (toFileDir);
+		     ObjectOutputStream oos = new ObjectOutputStream(fos   )) {
+			oos.writeObject(toSerialize);
+		} 
+		catch (IOException i) {
+			 i.printStackTrace();
+		}
+	}
+
+	public static Object deserialize(String fromFileDir) {
+		
+		try (FileInputStream   fis = new FileInputStream  (fromFileDir);
+		     ObjectInputStream ois = new ObjectInputStream(fis   )) {
+			return ois.readObject();
+		} 
+		catch (IOException i) {
+			i.printStackTrace();
+			return null;
+		} 
+		catch (ClassNotFoundException c) {
+			System.out.println("Employee class not found");
+			c.printStackTrace();
+			return null;
+		}
+	}
+
+
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-		displayMsg(WELCOME_MSG, login());
-		mainLoop();	
+		String username = login();
+		displayMsg(WELCOME_MSG, username);
+		HashSet<Activity> loadedActivities =
+			(HashSet<Activity>) deserialize(username + "/activities");
+		if (loadedActivities != null) {
+			activities = loadedActivities;
+		}
+		else {
+			activities = new HashSet<>();
+		}
+
+		try {
+			mainLoop();	
+		}
+		catch (NoSuchElementException e) {}
+		finally {
+			displayMsg(GOODBYE_MSG);
+			serialize(activities, username + "/activities");
+		}
 	}
 	
 	
 	private static void mainLoop() {
 		String input;
-
 		mainloop:
-		while (! (input = prompt(ACTION_PMT, inputActions.keySet()))
-			  .isEmpty()) {
+		while (! (input = promptOption(ACTION_CHC, 
+		                  inputActions.keySet(), true, "")
+			 ).isEmpty()) {
 			inputActions.get(input).run();
 		}	
 	}
-
+	
+	/**
+	 * Prints all activities to the user.
+	 *
+	 *
+	 */
 	public static void printActivities() {
 		displayMsg(AC_MSG, activities);
 	}
 
 	public static void addActivity() {
 		String name = prompt(AC_NAME_PMT);
-		
-		ActivityType type = enumLookup(ActivityType.class, 
-			                               prompt(AC_TYPE_PMT));
-		if (type == null) {
-			displayMsg(AC_TYPE_NOT_FOUND_MSG);
-			return;	
-		}
 
 		int from = Integer.valueOf(prompt(TIME_START_PMT));
 		int to = Integer.valueOf(prompt(TIME_STOP_PMT));
 
 		TimeInterval interval = new TimeInterval(from, to);
 
-		Activity activity = new Activity(name, type, interval);
+		Activity activity = new Activity(name, /*type,*/ interval);
 
 		displayMsg(ADDING_AC_MSG, activity);
 
-		if (! activities.containsKey(type)) {
-			activities.put(type, new ArrayList<>());
+		activities.add(activity);
+
+	}
+	
+	/**
+         *  
+         *
+         */
+	public static void filterByActivityType() {
+
+		ActivityType type = enumLookup(ActivityType.class,
+                                               prompt(AC_TYPE_PMT));
+		if (type == null) {
+			displayMsg(AC_TYPE_NOT_FOUND_MSG);
+			return;
 		}
-		activities.get(type).add(activity);
-
-
-
+		
+		/*if (! activities.containsKey(type)) {
+			activities.put(type, new ArrayList<>());
+		}*/
+		displayMsg(type.getActivities().toString());
 	}
 }
