@@ -1,0 +1,17 @@
+March 8th 2018
+  Current Code:
+  Login: Jacob
+  Welcome Jacob
+  Choose an action ([add, filter, print]): add
+  Enter an activity name: walking
+  Enter the start time: 2
+  Enter the stop time: 3
+  Adding Activity: Name: walking Interval: (1,2)
+  
+  Currently working in the filtering function which will allow the user
+  to subcategorize common activities within the main category created. 
+  For example, subcategory, Soccer will exist within the main category, Workout, 
+  to store the frequency of this activty by the user. 
+  This will provide more personalized data and graphs to help track progress. 
+  
+  
