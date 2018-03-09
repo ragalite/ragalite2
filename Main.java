@@ -1,12 +1,6 @@
+import java.util.function.*;
 import java.io.*;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * Upload activities and categorize them
@@ -18,7 +12,8 @@ public class Main {
 	/*private static final Map<ActivityType, List<Activity>> activities 
 		= new HashMap<>();*/
 	
-	private static HashSet<Activity> activities;
+	private static Set<Activity> activities;
+	private static List<String> categories;
 
 	private static final Map<String, Runnable> inputActions 
 		= new HashMap<>();
@@ -26,8 +21,10 @@ public class Main {
 
 	static {
 		inputActions.put("add", () -> addActivity());
-		inputActions.put("print", () -> printActivities());
+		inputActions.put("print", () -> printUserInfo());
 		inputActions.put("filter", () -> filterByActivityType());
+		inputActions.put("addcategory", () -> addCategory());
+		inputActions.put("setcategory", () -> setActivityCategory());
 	}
 
 	/* INTERACTIVE MESSAGES */
@@ -46,9 +43,11 @@ public class Main {
 	public static final String ACTION_CHC = 
 		"an action";
 
-	/* printActivities */
+	/* printUserInfo */
 	public static final String AC_MSG =
 		"Current activities: %s%n";
+	public static final String CAT_MSG =
+		"Current categories: %s%n";
 	
 	/* addActivity */
 	public static final String AC_TYPE_PMT =
@@ -61,6 +60,9 @@ public class Main {
 		"Enter the start time: ";
 	public static final String TIME_STOP_PMT = 
 		"Enter the stop time: ";
+	
+	public static final String CAT_NAME_PMT = 
+		"Enter the category to create: ";
 	
 	/* Exiting */
 	public static final String GOODBYE_MSG =
@@ -82,35 +84,38 @@ public class Main {
 	/**
 	 * Prompts the user to choose from a specified set of options.
 	 *
-	 * This function will attempt to match user input to an option. A *match*
-	 * occurs when
+	 * This function will attempt to match user input to an option. A
+	 * *match* occurs when
 	 *
-	 * 1. the input is the same as the option, or
-	 * 2. the option begins with the input (i.e., has it as one of its left 
-	 *    substrings), *and* the input is not an empty string.
+	 * 1. the input is the same as the option, or 2. the option begins with
+	 * the input (i.e., has it as one of its left substrings), *and* the
+	 * input is not an empty string.
 	 *
 	 * Matching is case-insensitive.
 	 *
-	 * If multiple options match with the given substring, then any one of them
-	 * may be returned.
+	 * If multiple options match with the given substring, then any one of
+	 * them may be returned.
 	 *
-	 * If no options match, then the user can be made to re-enter their choice
-	 * until one does, or a default value can be returned.
+	 * If no options match, then the user can be made to re-enter their
+	 * choice until one does, or a default value can be returned.
 	 *
-	 * The user can always terminate this function by inputting the empty string.
-	 * This again will result in the default value being returned.
+	 * The user can always terminate this function by inputting the empty
+	 * string.  This again will result in the default value being returned.
 	 *
 	 * Since the empty string is treated as a unique choice, it is
 	 * discouraged for the provided options to actually contain the empty
-	 * string. An empty string option will be ignored and the behavior will still
-	 * execute.
+	 * string. An empty string option will be ignored and the behavior will
+	 * still execute.
 	 *
 	 * @param promptSuffix specifies what to choose. The prefix is "Choose "
-	 *                     (including the space).
-	 * @param options      the set of options to display to the user
+	 * (including the space).  
+	 *
+	 * @param options the set of options to display to the user 
+	 *
 	 * @param reenterUntilSuccess forces the user to re-enter a choice until
 	 *                            it matches an option (or the choice is an
-	 *                            empty string)
+	 *                            empty string) 
+	 *
 	 * @param defaultChoice what to return if the user refuses to provide
 	 *                      an appropriate choice
 	 *
@@ -188,7 +193,7 @@ public class Main {
 	}
 
 	/**
-	 * Serializes an object. 
+	 * Serializes an object (writes it to a file).
 	 *
 	 */
 	public static void serialize(Serializable toSerialize, String toFileDir) {
@@ -205,13 +210,23 @@ public class Main {
 			 i.printStackTrace();
 		}
 	}
-
-	public static Object deserialize(String fromFileDir) {
+	
+	
+	
+	public static Object deserialize(String fromFileDir) 
+	                     throws IOException, ClassNotFoundException {
 		
 		try (FileInputStream   fis = new FileInputStream  (fromFileDir);
 		     ObjectInputStream ois = new ObjectInputStream(fis   )) {
 			return ois.readObject();
 		} 
+		catch (Exception e) {
+			throw e;
+		}
+		/*
+		catch (FileNotFoundException f) {
+			return null;
+		}
 		catch (IOException i) {
 			i.printStackTrace();
 			return null;
@@ -220,22 +235,58 @@ public class Main {
 			System.out.println("Employee class not found");
 			c.printStackTrace();
 			return null;
+		}*/
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> T deserializeOrDefault(String fromFileDir, 
+	                                         Supplier<T> defaultGenerator) {
+		try {
+			return (T) deserialize(fromFileDir);
+				
 		}
+		catch (Exception e) {
+			e.printStackTrace();
+			return defaultGenerator.get();
+		}
+	}
+	
+	/**
+	 * Loads the activities the user had previously registered under the
+	 * specified username.
+	 *
+	 */
+	public static void loadUser(String username) {
+		activities = deserializeOrDefault(
+		                     "USERS/" + username + "/activities", 
+		                     HashSet::new);
+		
+		
+		/*
+		List<String> d = new ArrayList<String>() {{
+			add("academic"); add("social"); add("physical");
+		}}; serialize((Serializable) d, "DEFAULTS/categories");
+		*/
+		List<String> defaultCategories = deserializeOrDefault("DEFAULTS/categories", ArrayList::new);
+		categories = deserializeOrDefault(
+		                     "USERS/" + username + "/categories", 
+		                     () -> defaultCategories);
+	}
+
+	public static void saveUser(String username) {
+		serialize((Serializable) activities, "USERS/" + username + "/activities");
+		serialize((Serializable) categories, "USERS/" + username + "/categories");
 	}
 
 
-	@SuppressWarnings("unchecked")
+
 	public static void main(String[] args) {
+		// lets the user input their username
 		String username = login();
 		displayMsg(WELCOME_MSG, username);
-		HashSet<Activity> loadedActivities =
-			(HashSet<Activity>) deserialize(username + "/activities");
-		if (loadedActivities != null) {
-			activities = loadedActivities;
-		}
-		else {
-			activities = new HashSet<>();
-		}
+
+		// load the user's data into memory
+		loadUser(username);
 
 		try {
 			mainLoop();	
@@ -243,7 +294,7 @@ public class Main {
 		catch (NoSuchElementException e) {}
 		finally {
 			displayMsg(GOODBYE_MSG);
-			serialize(activities, username + "/activities");
+			saveUser(username);
 		}
 	}
 	
@@ -263,7 +314,9 @@ public class Main {
 	 *
 	 *
 	 */
-	public static void printActivities() {
+	public static void printUserInfo() {
+		
+		displayMsg(CAT_MSG, categories);
 		displayMsg(AC_MSG, activities);
 	}
 
@@ -282,6 +335,15 @@ public class Main {
 		activities.add(activity);
 
 	}
+
+	public static void addCategory() {
+		categories.add(prompt(CAT_NAME_PMT));		
+	}
+
+	public static void setActivityCategory() {
+		
+	}
+
 	
 	/**
          *  
