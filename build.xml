@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ragalite2" default="compile" basedir=".">
 	
+	<!-- Variables -->
 	<property name="src.dir" location="src" />				
 	<property name="class.dir" location="classes" />
-
+	
+	<!-- Make the directories (if they don't already exist) --> 
+	<mkdir dir="${src.dir}"/>
+	<mkdir dir="${class.dir}"/>
+	
+	<!-- Compile all src files, place class files accordingly -->
 	<target name="compile">
 		<javac srcdir="${src.dir}" destdir="${class.dir}" />
 	</target>
