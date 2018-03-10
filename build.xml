@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ragalite2" default="compile" basedir=".">
+	
+	<property name="src.dir" location="src" />				
+	<property name="class.dir" location="classes" />
+
+	<target name="compile">
+		<javac srcdir="${src.dir}" destdir="${class.dir}" />
+	</target>
+</project>
