@@ -1,42 +1,55 @@
 package ragalite2;
 
-public enum InteractiveMessage {
+public final class InteractiveMessage {
 	/* INTERACTIVE MESSAGES */
 	/* PMT = PROMPT, MSG = MESSAGE, CHC = CHOICE */
 	/* (AC)TIVITY */
 
 	/* LOGIN */
-	LOGIN_PMT("Login: "),
-	WELCOME_MSG( "Welcome %s%n"),
-	AC_NAME_PMT( "Enter an activity name: "),
-		
+	public static final String LOGIN_PMT
+		= "Login: ";
+	public static final String WELCOME_MSG
+		=  "Welcome %s%n";
+	public static final String AC_NAME_PMT
+		=  "Enter an activity name: ";
+
 
 	/* mainLoop */
-	ACTION_CHC( "an action"),
+	public static final String ACTION_CHC
+		=  "an action";
 
 	/* printUserInfo */
-	AC_MSG("Current activities: %s%n"),
-		
-	CAT_MSG("Current categories: %s%n"),
-		
+	public static final String AC_MSG
+		= "Current activities: %s%n";
+
+	public static final String CAT_MSG
+		= "Current categories: %s%n";
+
 
 	/* addActivity */
-	AC_TYPE_PMT("What kind of activity is it? "),
-		
-	ADDING_AC_MSG( "Adding activity: %s%n"),
-		
-	AC_TYPE_NOT_FOUND_MSG( "Couldn't find activity type!%n"),
-		
-	TIME_START_PMT( "Enter the start time: "),
-		
-	TIME_STOP_PMT( "Enter the stop time: "),
-		
+	public static final String AC_TYPE_PMT
+		= "What kind of activity is it? ";
 
-	CAT_NAME_PMT( "Enter the category to create: "),
-		
+	public static final String ADDING_AC_MSG
+		=  "Adding activity: %s%n";
+
+	public static final String AC_TYPE_NOT_FOUND_MSG
+		=  "Couldn't find activity type!%n";
+
+	public static final String TIME_START_PMT
+		=  "Enter the start time: ";
+
+	public static final String TIME_STOP_PMT
+		=  "Enter the stop time: ";
+
+
+	public static final String CAT_NAME_PMT
+		=  "Enter the category to create: ";
+
 
 	/* Exiting */
-	GOODBYE_MSG("Goodbye!%n");
+	public static final String GOODBYE_MSG
+		= "Goodbye!%n";
 
 	private String msg;
 	private InteractiveMessage(String msg) {
