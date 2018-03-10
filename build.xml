@@ -13,4 +13,13 @@
 	<target name="compile">
 		<javac srcdir="${src.dir}" destdir="${class.dir}" />
 	</target>
+
+	<target name="jar" depends="compile">
+		<jar destfile="ragalite2.jar">
+			<fileset dir="${class.dir}" includes="**/*.class" />
+			<manifest>
+				<attribute name="Main-Class" value="ragalite2.Main" />
+			</manifest>	
+		</jar>
+	</target>	
 </project>
