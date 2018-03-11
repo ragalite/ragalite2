@@ -26,7 +26,7 @@ public class Main {
 	static {
 		inputActions.put("add", () -> addActivity());
 		inputActions.put("print", () -> printUserInfo());
-		inputActions.put("filter", () -> filterByActivityType());
+		/*inputActions.put("filter", () -> filterByActivityType());*/
 		inputActions.put("addcategory", () -> addCategory());
 		inputActions.put("setcategory", () -> setActivityCategory());
 	}
@@ -321,7 +321,6 @@ public class Main {
 	/**
          *
          *
-         */
 	public static void filterByActivityType() {
 
 		ActivityType type = enumLookup(ActivityType.class,
@@ -332,8 +331,9 @@ public class Main {
 		}
 
 		/*if (! activities.containsKey(type)) {
+		if (! activities.containsKey(type)) {
 			activities.put(type, new ArrayList<>());
-		}*/
+		}
 		displayMsg(type.getActivities().toString());
-	}
+	}*/
 }
