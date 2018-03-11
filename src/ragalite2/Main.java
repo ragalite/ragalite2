@@ -7,21 +7,21 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Upload activities and categorize them
+ * Upload activities and categorize them.
  */
 public class Main {
 
 	private static final Scanner stdin = new Scanner(System.in);
 
-	/*private static final Map<ActivityType, List<Activity>> activities 
+	/*private static final Map<ActivityType, List<Activity>> activities
 		= new HashMap<>();*/
-	
-	private static Set<Activity> activities;
+
+	private static Map<Activity, Activity> activities;
 	private static List<String> categories;
 
-	private static final Map<String, Runnable> inputActions 
+	private static final Map<String, Runnable> inputActions
 		= new HashMap<>();
-	
+
 
 	static {
 		inputActions.put("add", () -> addActivity());
@@ -71,27 +71,27 @@ public class Main {
 	 * still execute.
 	 *
 	 * @param promptSuffix specifies what to choose. The prefix is "Choose "
-	 * (including the space).  
+	 * (including the space).
 	 *
-	 * @param options the set of options to display to the user 
+	 * @param options the set of options to display to the user
 	 *
 	 * @param reenterUntilSuccess forces the user to re-enter a choice until
 	 *                            it matches an option (or the choice is an
-	 *                            empty string) 
+	 *                            empty string)
 	 *
 	 * @param defaultChoice what to return if the user refuses to provide
 	 *                      an appropriate choice
 	 *
 	 * @return the user's choice
-	 * 
+	 *
          */
 	public static String promptOption(String promptSuffix,
 	                                  Set<String> options,
 					  boolean reenterUntilSuccess,
 					  String defaultChoice) {
 		String choice;
-		do {	
-			System.out.printf("Choose %s (%s): ", promptSuffix, 
+		do {
+			System.out.printf("Choose %s (%s): ", promptSuffix,
                                                               options);
 			choice = stdin.nextLine().toLowerCase();
 			if (choice.isEmpty()) { // all strings start with the
@@ -107,7 +107,7 @@ public class Main {
 		} while (reenterUntilSuccess);
 
 		return defaultChoice;
-	}  
+	}
 
 	/**
 	 * Displays a message to the user.
@@ -119,17 +119,17 @@ public class Main {
 	public static void displayMsg(String msg, Object... fmtParams) {
 		System.out.printf(msg, fmtParams);
 	}
-	
+
 	/**
 	 * Prompts the user to log in.
 	 *
 	 * @return the username used to log in
 	 */
 	public static String login() {
-		String username = prompt(LOGIN_PMT); 
+		String username = prompt(LOGIN_PMT);
 		return username;
 	}
-	
+
 	/**
 	 * Looks up a member of an enum by its string representation.
 	 *
@@ -168,21 +168,21 @@ public class Main {
 		try (FileOutputStream   fos = new FileOutputStream  (toFileDir);
 		     ObjectOutputStream oos = new ObjectOutputStream(fos   )) {
 			oos.writeObject(toSerialize);
-		} 
+		}
 		catch (IOException i) {
 			 i.printStackTrace();
 		}
 	}
-	
-	
-	
-	public static Object deserialize(String fromFileDir) 
+
+
+
+	public static Object deserialize(String fromFileDir)
 	                     throws IOException, ClassNotFoundException {
-		
+
 		try (FileInputStream   fis = new FileInputStream  (fromFileDir);
 		     ObjectInputStream ois = new ObjectInputStream(fis   )) {
 			return ois.readObject();
-		} 
+		}
 		catch (Exception e) {
 			throw e;
 		}
@@ -193,27 +193,27 @@ public class Main {
 		catch (IOException i) {
 			i.printStackTrace();
 			return null;
-		} 
+		}
 		catch (ClassNotFoundException c) {
 			System.out.println("Employee class not found");
 			c.printStackTrace();
 			return null;
 		}*/
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public static <T> T deserializeOrDefault(String fromFileDir, 
+	public static <T> T deserializeOrDefault(String fromFileDir,
 	                                         Supplier<T> defaultGenerator) {
 		try {
 			return (T) deserialize(fromFileDir);
-				
+
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			return defaultGenerator.get();
 		}
 	}
-	
+
 	/**
 	 * Loads the activities the user had previously registered under the
 	 * specified username.
@@ -221,10 +221,10 @@ public class Main {
 	 */
 	public static void loadUser(String username) {
 		activities = deserializeOrDefault(
-		                     "USERS/" + username + "/activities", 
-		                     HashSet::new);
-		
-		
+		                     "USERS/" + username + "/activities",
+		                     HashMap::new);
+
+
 		/*
 		List<String> d = new ArrayList<String>() {{
 			add("academic"); add("social"); add("physical");
@@ -232,7 +232,7 @@ public class Main {
 		*/
 		List<String> defaultCategories = deserializeOrDefault("DEFAULTS/categories", ArrayList::new);
 		categories = deserializeOrDefault(
-		                     "USERS/" + username + "/categories", 
+		                     "USERS/" + username + "/categories",
 		                     () -> defaultCategories);
 	}
 
@@ -252,7 +252,7 @@ public class Main {
 		loadUser(username);
 
 		try {
-			mainLoop();	
+			mainLoop();
 		}
 		catch (NoSuchElementException e) {}
 		finally {
@@ -260,25 +260,25 @@ public class Main {
 			saveUser(username);
 		}
 	}
-	
-	
+
+
 	private static void mainLoop() {
 		String input;
 		mainloop:
-		while (! (input = promptOption(ACTION_CHC, 
+		while (! (input = promptOption(ACTION_CHC,
 		                  inputActions.keySet(), true, "")
 			 ).isEmpty()) {
 			inputActions.get(input).run();
-		}	
+		}
 	}
-	
+
 	/**
 	 * Prints all activities to the user.
 	 *
 	 *
 	 */
 	public static void printUserInfo() {
-		
+
 		displayMsg(CAT_MSG, categories);
 		displayMsg(AC_MSG, activities);
 	}
@@ -295,21 +295,31 @@ public class Main {
 
 		displayMsg(ADDING_AC_MSG, activity);
 
-		activities.add(activity);
+		activities.put(activity, activity);
 
 	}
 
 	public static void addCategory() {
-		categories.add(prompt(CAT_NAME_PMT));		
+		categories.add(prompt(CAT_NAME_PMT));
 	}
 
 	public static void setActivityCategory() {
-		
+		String name = prompt(AC_NAME_PMT);
+
+		Activity theActivity = activities.get(new Activity(name,
+		                                      new TimeInterval(0, 0)));
+		if (theActivity == null) {
+			displayMsg(NO_SUCH_AC_MSG, name);
+			return;
+		}
+
+		String category = prompt(CAT_NAME_PMT);
+		theActivity.setCategory(category);
 	}
 
-	
+
 	/**
-         *  
+         *
          *
          */
 	public static void filterByActivityType() {
@@ -320,7 +330,7 @@ public class Main {
 			displayMsg(AC_TYPE_NOT_FOUND_MSG);
 			return;
 		}
-		
+
 		/*if (! activities.containsKey(type)) {
 			activities.put(type, new ArrayList<>());
 		}*/

@@ -46,6 +46,8 @@ public final class InteractiveMessage {
 	public static final String CAT_NAME_PMT
 		=  "Enter the category to create: ";
 
+	public static final String NO_SUCH_AC_MSG
+		= "No such activity: %s%n";
 
 	/* Exiting */
 	public static final String GOODBYE_MSG
