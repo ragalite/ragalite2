@@ -5,12 +5,11 @@
 	<property name="src.dir" location="src" />				
 	<property name="class.dir" location="classes" />
 	<property name="build.dir" location="build" />
-	
+
 	<!-- Make the directories (if they don't already exist) --> 
 	<mkdir dir="${src.dir}"/>
 	<mkdir dir="${class.dir}"/>
 	<mkdir dir="${build.dir}"/>
-
 	
 	<!-- Compile all src files, place class files accordingly -->
 	<target name="compile">
