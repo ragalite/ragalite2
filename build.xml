@@ -4,10 +4,13 @@
 	<!-- Variables -->
 	<property name="src.dir" location="src" />				
 	<property name="class.dir" location="classes" />
+	<property name="build.dir" location="build" />
 	
 	<!-- Make the directories (if they don't already exist) --> 
 	<mkdir dir="${src.dir}"/>
 	<mkdir dir="${class.dir}"/>
+	<mkdir dir="${build.dir}"/>
+
 	
 	<!-- Compile all src files, place class files accordingly -->
 	<target name="compile">
@@ -15,7 +18,7 @@
 	</target>
 
 	<target name="jar" depends="compile">
-		<jar destfile="ragalite2.jar">
+		<jar destfile="${build.dir}/ragalite2.jar">
 			<fileset dir="${class.dir}" includes="**/*.class" />
 			<manifest>
 				<attribute name="Main-Class" value="ragalite2.Main" />
