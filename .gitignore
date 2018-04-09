@@ -4,3 +4,7 @@ DEFAULTS/
 USERS/
 classes/
 build/
+
+
+.*.sw*
+*.*~
