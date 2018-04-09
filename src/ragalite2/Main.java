@@ -5,7 +5,6 @@ import static ragalite2.InteractiveMessage.*;
 import java.util.function.*;
 import java.io.*;
 import java.util.*;
-
 /**
  * Upload activities and categorize them.
  */
