@@ -24,4 +24,9 @@
 			</manifest>	
 		</jar>
 	</target>	
+
+	<target name="clean">
+		<delete dir="${build.dir}"/>
+		<delete dir="${class.dir}"/>
+	</target>
 </project>
