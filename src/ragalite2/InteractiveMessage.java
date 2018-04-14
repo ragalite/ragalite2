@@ -53,12 +53,5 @@ public final class InteractiveMessage {
 	public static final String GOODBYE_MSG
 		= "Goodbye!%n";
 
-	private String msg;
-	private InteractiveMessage(String msg) {
-		this.msg = msg;
-	}
 
-	public @Override String toString() {
-		return msg;
-	}
 }

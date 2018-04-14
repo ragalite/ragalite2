@@ -1,6 +1,9 @@
 package ragalite2;
 
 import static ragalite2.InteractiveMessage.*;
+import static ragalite2.internal.serialization.Serialization.*;
+
+import java.util.function.Supplier;
 
 import java.util.function.*;
 import java.io.*;
@@ -154,28 +157,28 @@ public class Main {
 		}
 	}
 
-	/**
-	 * Serializes an object (writes it to a file).
-	 *
-	 */
-	public static void serialize(Serializable toSerialize, String toFileDir) {
-		// make sure the path to file exists!
-		// we do getParentFile because we don't want to make the file
-		// itself a directory.
-		new File(toFileDir).getParentFile().mkdirs();
+//	/**
+//	 * Serializes an object (writes it to a file).
+//	 *
+//	 */
+//	public static void serialize(Serializable toSerialize, String toFileDir) {
+//		// make sure the path to file exists!
+//		// we do getParentFile because we don't want to make the file
+//		// itself a directory.
+//		new File(toFileDir).getParentFile().mkdirs();
+//
+//		try (FileOutputStream   fos = new FileOutputStream  (toFileDir);
+//		     ObjectOutputStream oos = new ObjectOutputStream(fos   )) {
+//			oos.writeObject(toSerialize);
+//		}
+//		catch (IOException i) {
+//			 i.printStackTrace();
+//		}
+//	}
 
-		try (FileOutputStream   fos = new FileOutputStream  (toFileDir);
-		     ObjectOutputStream oos = new ObjectOutputStream(fos   )) {
-			oos.writeObject(toSerialize);
-		}
-		catch (IOException i) {
-			 i.printStackTrace();
-		}
-	}
 
 
-
-	public static Object deserialize(String fromFileDir)
+/*	public static Object deserialize(String fromFileDir)
 	                     throws IOException, ClassNotFoundException {
 
 		try (FileInputStream   fis = new FileInputStream  (fromFileDir);
@@ -197,21 +200,21 @@ public class Main {
 			System.out.println("Employee class not found");
 			c.printStackTrace();
 			return null;
-		}*/
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> T deserializeOrDefault(String fromFileDir,
-	                                         Supplier<T> defaultGenerator) {
-		try {
-			return (T) deserialize(fromFileDir);
-
 		}
-		catch (Exception e) {
-			e.printStackTrace();
-			return defaultGenerator.get();
-		}
-	}
+	}*/
+
+//	@SuppressWarnings("unchecked")
+//	public static <T> T deserializeOrDefault(String fromFileDir,
+//	                                         Supplier<T> defaultGenerator) {
+//		try {
+//			return (T) deserialize(fromFileDir);
+//
+//		}
+//		catch (Exception e) {
+//			e.printStackTrace();
+//			return defaultGenerator.get();
+//		}
+//	}
 
 	/**
 	 * Loads the activities the user had previously registered under the
@@ -221,7 +224,8 @@ public class Main {
 	public static void loadUser(String username) {
 		activities = deserializeOrDefault(
 		                     "USERS/" + username + "/activities",
-		                     HashMap::new);
+		                     HashMap::new,
+                         HashMap.class);
 
 
 		/*
@@ -229,20 +233,22 @@ public class Main {
 			add("academic"); add("social"); add("physical");
 		}}; serialize((Serializable) d, "DEFAULTS/categories");
 		*/
-		List<String> defaultCategories = deserializeOrDefault("DEFAULTS/categories", ArrayList::new);
+		List<String> defaultCategories = deserializeOrDefault("DEFAULTS/categories", ArrayList::new, ArrayList.class);
 		categories = deserializeOrDefault(
 		                     "USERS/" + username + "/categories",
-		                     () -> defaultCategories);
+		                     () -> defaultCategories,
+                         List.class);
+
 	}
 
-	public static void saveUser(String username) {
-		serialize((Serializable) activities, "USERS/" + username + "/activities");
-		serialize((Serializable) categories, "USERS/" + username + "/categories");
+	public static void saveUser(String username) throws IOException {
+		serializeOverwrite((Serializable) activities, "USERS/" + username + "/activities");
+		serializeOverwrite((Serializable) categories, "USERS/" + username + "/categories");
 	}
 
 
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		// lets the user input their username
 		String username = login();
 		displayMsg(WELCOME_MSG, username);

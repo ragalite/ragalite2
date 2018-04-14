@@ -96,6 +96,7 @@ public final class WriterRelay extends Writer {
 			Collection<PrintStream> defaultReceivingStreams,
 			Collection<Consumer<String>> defaultReceivingCallbacks) {
 
+      this.storageObjectSupplier = storageObjectSupplier;
 			this.defaultReceivingStreams = storageObjectSupplier.get();
 			this.defaultReceivingCallbacks = storageObjectSupplier.get();
 
